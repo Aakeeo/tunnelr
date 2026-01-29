@@ -1,0 +1,11 @@
+# Don't send these to Docker daemon (faster builds)
+.git
+.gitignore
+README.md
+docker-compose.yml
+Caddyfile
+*.md
+
+# Ignore local binaries
+/server
+/cli
