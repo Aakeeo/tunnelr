@@ -34,14 +34,28 @@ docker compose up -d
 curl https://yourdomain.com/status
 ```
 
-### 2. Connect from Your Machine
+### 2. Set Up the Client (Your Local Machine)
+
+**Prerequisites:** Go 1.21+ installed ([download here](https://go.dev/dl/))
 
 ```bash
+# Clone the repo
+git clone https://github.com/Aakeeo/tunnelr.git
+cd tunnelr
+
 # Build the CLI
 go build -o tunnelr ./cmd/cli
 
+# (Optional) Move to your PATH for easy access
+sudo mv tunnelr /usr/local/bin/
+
 # Connect to your server
-TUNNELR_SERVER=wss://yourdomain.com/ws ./tunnelr connect 3000
+TUNNELR_SERVER=wss://yourdomain.com/ws tunnelr connect 3000
+```
+
+**Quick Install (one-liner):**
+```bash
+git clone https://github.com/Aakeeo/tunnelr.git && cd tunnelr && go build -o tunnelr ./cmd/cli && sudo mv tunnelr /usr/local/bin/
 ```
 
 You'll see:
