@@ -75,29 +75,36 @@ All configuration is done via environment variables in `.env`:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `BASE_DOMAIN` | Your domain (e.g., `tunnel.example.com`) | `localhost` |
-| `ROUTING_MODE` | `subdomain` or `path` (see below) | `subdomain` |
+| `ROUTING_MODE` | `path` or `subdomain` (see below) | `path` |
 | `SSL_EMAIL` | Email for Let's Encrypt certificates | - |
 
 ### Routing Modes
 
-**Path Mode** (recommended for easy setup)
+| | Path Mode | Subdomain Mode |
+|---|-----------|----------------|
+| **URL format** | `yourdomain.com/t/abc123` | `abc123.yourdomain.com` |
+| **DNS required** | Single A record | Wildcard A record (`*`) |
+| **SSL** | Automatic (HTTP-01) | Requires DNS-01 setup |
+
+**Path Mode** (default)
 ```
 ROUTING_MODE=path
 ```
 - URLs: `https://yourdomain.com/t/abc123/webhook`
-- Requires: Only main domain DNS
-- SSL works automatically (no wildcard cert needed)
+- Just point your domain to the server - done!
+- SSL works automatically
 
-**Subdomain Mode** (cleaner URLs)
+**Subdomain Mode** (prettier URLs)
 ```
 ROUTING_MODE=subdomain
 ```
 - URLs: `https://abc123.yourdomain.com/webhook`
-- Requires: Wildcard DNS + wildcard SSL certificate
-- Better compatibility with some webhook providers
+- Requires: Wildcard DNS (`*.yourdomain.com`) + wildcard SSL certificate
 - See [Wildcard SSL Setup](#wildcard-ssl-setup) for configuration
 
 ## DNS Setup
+
+Point your domain to your VPS by adding A record(s) in your DNS provider (Cloudflare, Namecheap, Route53, etc.).
 
 ### For Path Mode (Recommended)
 
@@ -121,11 +128,11 @@ yourdomain.com      →  YOUR_SERVER_IP
 ## SSL Certificates
 
 ### Path Mode
-SSL works automatically. Caddy obtains certificates from Let's Encrypt using HTTP-01 challenge.
+SSL works automatically. Caddy obtains certificates from Let's Encrypt using **HTTP-01 challenge** (Let's Encrypt verifies domain ownership by making an HTTP request to your server).
 
 ### Subdomain Mode (Wildcard SSL)
 
-Wildcard certificates (`*.yourdomain.com`) require DNS-01 challenge. Caddy needs API access to your DNS provider to create verification records.
+Wildcard certificates (`*.yourdomain.com`) require **DNS-01 challenge** (Let's Encrypt verifies ownership by checking a TXT record you create in DNS). Caddy needs API access to your DNS provider to create these records automatically.
 
 **Option 1: Use Cloudflare (Recommended)**
 
@@ -182,12 +189,11 @@ Response:
 ```json
 {
   "ready": true,
-  "message": "Ready! Tunnel URLs: https://<tunnel-id>.yourdomain.com/...",
+  "message": "Ready! Tunnel URLs: https://yourdomain.com/t/<tunnel-id>/...",
   "base_domain": "yourdomain.com",
-  "routing_mode": "subdomain",
+  "routing_mode": "path",
   "active_tunnels": 0,
-  "domain_check": {"ok": true, "ips": ["167.99.x.x"]},
-  "wildcard_check": {"ok": true, "ips": ["167.99.x.x"]}
+  "domain_check": {"ok": true, "ips": ["167.99.x.x"]}
 }
 ```
 
