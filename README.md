@@ -13,14 +13,25 @@ A self-hosted localhost tunnel. Expose your local development server to the inte
 
 ### 1. Deploy the Server
 
-On your VPS (requires Docker):
+On your VPS:
 
 ```bash
-git clone https://github.com/yourusername/tunnelr.git
+# Install Docker (if not already installed)
+curl -fsSL https://get.docker.com | sh
+
+# Clone the repo
+git clone https://github.com/Aakeeo/tunnelr.git
 cd tunnelr
+
+# Configure
 cp .env.example .env
-# Edit .env with your domain
+nano .env  # Set your domain and email
+
+# Start the server
 docker compose up -d
+
+# Verify deployment
+curl https://yourdomain.com/status
 ```
 
 ### 2. Connect from Your Machine
@@ -29,16 +40,16 @@ docker compose up -d
 # Build the CLI
 go build -o tunnelr ./cmd/cli
 
-# Connect your local server
-./tunnelr connect 3000
+# Connect to your server
+TUNNELR_SERVER=wss://yourdomain.com/ws ./tunnelr connect 3000
 ```
 
 You'll see:
 ```
 Tunnel established!
 
-  Public URL:  https://a1b2c3.yourdomain.com
-  Forwarding:  https://a1b2c3.yourdomain.com -> http://localhost:3000
+  Public URL:  https://yourdomain.com/t/a1b2c3
+  Forwarding:  https://yourdomain.com/t/a1b2c3 -> http://localhost:3000
 
 Press Ctrl+C to close the tunnel
 ```
@@ -55,23 +66,33 @@ All configuration is done via environment variables in `.env`:
 
 ### Routing Modes
 
-**Subdomain Mode** (recommended)
-```
-ROUTING_MODE=subdomain
-```
-- URLs: `https://abc123.yourdomain.com/webhook`
-- Requires: Wildcard DNS (`*.yourdomain.com` → server IP)
-- Best compatibility with webhook providers
-
-**Path Mode** (simpler DNS)
+**Path Mode** (recommended for easy setup)
 ```
 ROUTING_MODE=path
 ```
 - URLs: `https://yourdomain.com/t/abc123/webhook`
-- Requires: Only main domain DNS (no wildcard needed)
-- Easier setup if you can't add wildcard DNS
+- Requires: Only main domain DNS
+- SSL works automatically (no wildcard cert needed)
+
+**Subdomain Mode** (cleaner URLs)
+```
+ROUTING_MODE=subdomain
+```
+- URLs: `https://abc123.yourdomain.com/webhook`
+- Requires: Wildcard DNS + wildcard SSL certificate
+- Better compatibility with some webhook providers
+- See [Wildcard SSL Setup](#wildcard-ssl-setup) for configuration
 
 ## DNS Setup
+
+### For Path Mode (Recommended)
+
+Add one A record:
+```
+yourdomain.com      →  YOUR_SERVER_IP
+```
+
+Caddy automatically obtains SSL certificate via HTTP-01 challenge. No additional setup needed.
 
 ### For Subdomain Mode
 
@@ -81,12 +102,59 @@ yourdomain.com      →  YOUR_SERVER_IP
 *.yourdomain.com    →  YOUR_SERVER_IP
 ```
 
-### For Path Mode
+> **Note:** Subdomain mode requires a wildcard SSL certificate. See [Wildcard SSL Setup](#wildcard-ssl-setup) below.
 
-Add one A record:
+## SSL Certificates
+
+### Path Mode
+SSL works automatically. Caddy obtains certificates from Let's Encrypt using HTTP-01 challenge.
+
+### Subdomain Mode (Wildcard SSL)
+
+Wildcard certificates (`*.yourdomain.com`) require DNS-01 challenge. Caddy needs API access to your DNS provider to create verification records.
+
+**Option 1: Use Cloudflare (Recommended)**
+
+1. Move your domain's nameservers to Cloudflare (free)
+2. Get a Cloudflare API token with DNS edit permissions
+3. Update `docker-compose.yml`:
+```yaml
+caddy:
+  image: caddy:2-alpine
+  # ... existing config ...
+  environment:
+    - CLOUDFLARE_API_TOKEN=your_token_here
 ```
-yourdomain.com      →  YOUR_SERVER_IP
+
+4. Update `Caddyfile`:
 ```
+*.{$BASE_DOMAIN} {
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+    reverse_proxy server:8080 {
+        header_up Host {host}
+    }
+}
+```
+
+5. Rebuild with Cloudflare DNS plugin:
+```dockerfile
+FROM caddy:2-builder AS builder
+RUN xcaddy build --with github.com/caddy-dns/cloudflare
+
+FROM caddy:2-alpine
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+```
+
+**Option 2: Use Path Mode**
+
+If you don't want to set up DNS-01 challenge, use path mode instead:
+```
+ROUTING_MODE=path
+```
+
+URLs will be `https://yourdomain.com/t/<tunnel-id>/...` - no wildcard cert needed.
 
 ## Verifying Setup
 
