@@ -1,13 +1,25 @@
+<div align="center">
+
 # Tunnelr
 
-A self-hosted localhost tunnel. Expose your local development server to the internet with your own domain.
+**Self-hosted localhost tunnel. Expose local dev servers to the internet with your own domain.**
 
-**Why Tunnelr?**
+[![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go&logoColor=white)](https://go.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat&logo=docker&logoColor=white)](docker-compose.yml)
+[![Self-Hosted](https://img.shields.io/badge/Self--Hosted-yes-22c55e)]()
 
-- **Self-hosted** - Your data stays on your infrastructure
-- **No limits** - Unlimited tunnels, no time restrictions
-- **Simple** - One command to deploy, one command to connect
-- **Flexible** - Subdomain or path-based routing
+[Website](https://aakeeo.github.io/tunnelr) · [Quick Start](#quick-start) · [Compare](#comparison-with-alternatives)
+
+</div>
+
+---
+
+- **Self-hosted** — Your data stays on your infrastructure
+- **No limits** — Unlimited tunnels, no time restrictions
+- **Simple** — One command to deploy, one command to connect
+- **Flexible** — Subdomain or path-based routing
+- **Private** — No third-party sees your traffic
 
 ## Quick Start
 

@@ -3,23 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tunnelr - Self-hosted localhost tunnel</title>
-    <meta name="description" content="A self-hosted localhost tunneling tool built by a CRM company that got tired of duct-taping dev workflows.">
+    <title>Tunnelr — Self-hosted localhost tunnel</title>
+    <meta name="description" content="Expose your local dev server to the internet with your own domain. Self-hosted, no limits, full privacy. The ngrok alternative you actually own.">
+    <meta name="keywords" content="localhost tunnel, self-hosted, ngrok alternative, webhook testing, developer tools, reverse tunnel, expose localhost">
+    <link rel="canonical" href="https://aakeeo.github.io/tunnelr/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Tunnelr — Self-hosted localhost tunnel">
+    <meta property="og:description" content="Expose your local dev server to the internet with your own domain. Self-hosted, no limits, full privacy.">
+    <meta property="og:url" content="https://aakeeo.github.io/tunnelr/">
+    <meta property="og:site_name" content="Tunnelr">
+    <meta property="og:image" content="https://aakeeo.github.io/tunnelr/social-preview.png">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="640">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tunnelr — Self-hosted localhost tunnel">
+    <meta name="twitter:description" content="Expose your local dev server to the internet with your own domain. Self-hosted, no limits, full privacy.">
+    <meta name="twitter:image" content="https://aakeeo.github.io/tunnelr/social-preview.png">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+
     <style>
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         :root {
-            --bg: #0a0a0a;
-            --surface: #141414;
-            --border: #262626;
-            --text: #fafafa;
-            --text-muted: #a1a1a1;
+            --bg: #050505;
+            --surface: #0f0f0f;
+            --surface-2: #171717;
+            --border: #1f1f1f;
+            --border-light: #2a2a2a;
+            --text: #f5f5f5;
+            --text-muted: #888;
+            --text-dim: #555;
             --accent: #22c55e;
+            --accent-glow: rgba(34, 197, 94, 0.15);
             --accent-dim: #16a34a;
+            --red: #ef4444;
+            --gradient: linear-gradient(135deg, #22c55e 0%, #06b6d4 100%);
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
@@ -27,21 +59,72 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1080px;
             margin: 0 auto;
             padding: 0 24px;
         }
 
-        /* Header */
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: var(--accent); }
+            51%, 100% { border-color: transparent; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.2); }
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Header ── */
         header {
-            padding: 20px 0;
+            padding: 18px 0;
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
-            background: var(--bg);
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 100;
         }
 
@@ -52,26 +135,30 @@
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--text);
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
 
         .logo span {
-            color: var(--accent);
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         nav {
             display: flex;
             align-items: center;
-            gap: 32px;
+            gap: 28px;
         }
 
         nav a {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: color 0.2s;
         }
 
@@ -82,373 +169,858 @@
         .github-link {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: border-color 0.2s, background 0.2s;
         }
 
-        /* Hero */
+        .github-link:hover {
+            border-color: var(--border-light);
+            background: var(--border);
+        }
+
+        .star-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
+        }
+
+        .star-btn:hover {
+            border-color: #fbbf24;
+            color: #fbbf24;
+        }
+
+        /* ── Hero ── */
         .hero {
-            padding: 80px 0;
+            padding: 100px 0 60px;
             text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(34, 197, 94, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 32px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse-glow 2s infinite;
         }
 
         .hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
             margin-bottom: 24px;
-            letter-spacing: -0.02em;
+            animation: fadeUp 0.8s ease;
         }
 
-        .hero h1 span {
-            color: var(--accent);
+        .hero h1 .gradient-text {
+            background: var(--gradient);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 4s ease infinite;
         }
 
         .hero .tagline {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             color: var(--text-muted);
-            max-width: 650px;
-            margin: 0 auto 32px;
+            max-width: 560px;
+            margin: 0 auto 40px;
+            animation: fadeUp 0.8s ease 0.1s both;
         }
 
-        .cta-buttons {
+        .cta-row {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
+            animation: fadeUp 0.8s ease 0.2s both;
         }
 
         .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
             text-decoration: none;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
             background: var(--accent);
             color: #000;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
         }
 
         .btn-primary:hover {
             background: var(--accent-dim);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+            transform: translateY(-1px);
         }
 
-        .btn-secondary {
-            background: var(--surface);
-            color: var(--text);
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
             border: 1px solid var(--border);
         }
 
-        .btn-secondary:hover {
+        .btn-ghost:hover {
             border-color: var(--text-muted);
+            color: var(--text);
         }
 
-        /* Code block */
-        .code-section {
-            padding: 40px 0 80px;
+        .hero-ph {
+            margin-top: 28px;
+            animation: fadeUp 0.8s ease 0.3s both;
         }
 
-        .code-block {
+        /* ── Animated Terminal ── */
+        .terminal-section {
+            padding: 0 0 100px;
+        }
+
+        .terminal {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            max-width: 720px;
+            margin: 0 auto;
         }
 
-        .code-header {
-            padding: 12px 16px;
+        .terminal-bar {
+            padding: 14px 16px;
             border-bottom: 1px solid var(--border);
             display: flex;
+            align-items: center;
             gap: 8px;
         }
 
-        .code-dot {
+        .terminal-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: var(--border);
         }
 
-        .code-content {
-            padding: 24px;
-            overflow-x: auto;
-        }
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #febc2e; }
+        .terminal-dot.green { background: #28c840; }
 
-        pre {
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
             font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-            font-size: 0.9rem;
-            line-height: 1.7;
         }
 
-        .comment {
-            color: var(--text-muted);
+        .terminal-body {
+            padding: 24px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            min-height: 240px;
         }
 
-        .command {
+        .term-line {
+            opacity: 0;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .term-line.visible {
+            opacity: 1;
+        }
+
+        .term-line .prompt {
             color: var(--accent);
         }
 
-        /* Story section */
-        .story {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .story h2 {
-            font-size: 1.75rem;
-            margin-bottom: 24px;
-        }
-
-        .story p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-bottom: 16px;
-            max-width: 700px;
-        }
-
-        /* Privacy callout */
-        .privacy-callout {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--accent);
-            border-radius: 8px;
-            padding: 24px;
-            margin-top: 32px;
-            max-width: 700px;
-        }
-
-        .privacy-callout p {
-            margin-bottom: 0;
+        .term-line .cmd {
             color: var(--text);
         }
 
-        .privacy-callout p strong {
+        .term-line .comment {
+            color: var(--text-dim);
+        }
+
+        .term-line .output {
+            color: var(--text-muted);
+        }
+
+        .term-line .url {
+            color: #06b6d4;
+        }
+
+        .term-line .success {
             color: var(--accent);
+            font-weight: 600;
         }
 
-        /* What it is section */
-        .what-it-is {
-            padding: 80px 0;
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--accent);
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            padding: 60px 0;
             border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
 
-        .what-it-is h2 {
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
             text-align: center;
-            font-size: 1.75rem;
-            margin-bottom: 48px;
         }
 
-        .two-col {
+        .stat h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* ── Story / Why ── */
+        .story {
+            padding: 100px 0;
+        }
+
+        .story-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 48px;
+            gap: 80px;
+            align-items: center;
         }
 
-        .col {
+        .story-text h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+        }
+
+        .story-text p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+        }
+
+        .privacy-box {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 32px;
-        }
-
-        .col h3 {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-
-        .col ul {
-            list-style: none;
-        }
-
-        .col ul li {
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            padding-left: 24px;
             position: relative;
+            overflow: hidden;
         }
 
-        .col.is li::before {
-            content: "✓";
+        .privacy-box::before {
+            content: '';
             position: absolute;
+            top: 0;
             left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient);
+        }
+
+        .privacy-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .privacy-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--accent);
+            font-size: 1rem;
+            flex-shrink: 0;
         }
 
-        .col.isnt li::before {
-            content: "×";
-            position: absolute;
-            left: 0;
-            color: #ef4444;
+        .privacy-item h4 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
         }
 
-        /* Use cases */
-        .use-cases {
-            padding: 80px 0;
+        .privacy-item p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        /* ── How it works ── */
+        .how-it-works {
+            padding: 100px 0;
             border-top: 1px solid var(--border);
         }
 
-        .use-cases h2 {
+        .section-header {
             text-align: center;
-            font-size: 1.75rem;
-            margin-bottom: 48px;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            position: relative;
+        }
+
+        .step {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .step:hover {
+            border-color: var(--border-light);
+            transform: translateY(-4px);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 10px;
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .step h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .step code {
+            display: inline-block;
+            margin-top: 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        /* ── Architecture ── */
+        .architecture {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .arch-diagram {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 48px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .arch-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 32px;
+        }
+
+        .arch-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .arch-node {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 140px;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .arch-node:hover {
+            border-color: var(--accent);
+            transform: scale(1.03);
+        }
+
+        .arch-node.highlight {
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.05);
+        }
+
+        .arch-node h4 {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .arch-node p {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+
+        .arch-connector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .arch-arrow {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .arch-arrow span {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .arch-label {
+            text-align: center;
+            padding: 10px 0;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 24px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        /* ── Features / What it is ── */
+        .features {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* ── Use Cases ── */
+        .use-cases {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
         }
 
         .use-cases-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
         }
 
         .use-case {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 14px;
+            padding: 28px 24px;
             text-align: center;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .use-case:hover {
+            border-color: var(--border-light);
+            transform: translateY(-3px);
+        }
+
+        .use-case-icon {
+            font-size: 1.8rem;
+            margin-bottom: 14px;
+            display: block;
         }
 
         .use-case h3 {
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 8px;
         }
 
         .use-case p {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.82rem;
         }
 
-        /* Comparison */
+        /* ── Comparison ── */
         .comparison {
-            padding: 80px 0;
+            padding: 100px 0;
             border-top: 1px solid var(--border);
         }
 
-        .comparison h2 {
-            text-align: center;
-            font-size: 1.75rem;
-            margin-bottom: 48px;
+        .comparison-table {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
+        }
+
+        thead {
+            background: var(--surface-2);
         }
 
         th, td {
-            padding: 16px;
+            padding: 16px 20px;
             text-align: left;
             border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
         }
 
         th {
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        th:first-child {
+            width: 35%;
+        }
+
+        th.tunnelr-col {
+            color: var(--accent);
         }
 
         td:first-child {
+            color: var(--text-muted);
             font-weight: 500;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
         }
 
         .check {
             color: var(--accent);
+            font-weight: 600;
         }
 
         .cross {
-            color: #ef4444;
+            color: var(--text-dim);
         }
 
-        /* CTA section */
+        /* ── CTA ── */
         .cta-section {
-            padding: 80px 0;
+            padding: 100px 0;
             border-top: 1px solid var(--border);
             text-align: center;
+            position: relative;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(34, 197, 94, 0.04) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .cta-section h2 {
-            font-size: 1.75rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+
+        .cta-section .sub {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+
+        .cta-code {
+            display: inline-block;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 24px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
             margin-bottom: 32px;
         }
 
-        .cta-links {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .cta-links a {
+        .cta-code .cmd {
             color: var(--accent);
-            text-decoration: none;
-            font-size: 1.1rem;
-            transition: opacity 0.2s;
         }
 
-        .cta-links a:hover {
-            opacity: 0.8;
+        .cta-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .cta-links .coming-soon {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
-        /* Footer */
+        /* ── Footer ── */
         footer {
             padding: 40px 0;
             border-top: 1px solid var(--border);
-            text-align: center;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
             color: var(--text-muted);
         }
 
+        /* ── Responsive ── */
         @media (max-width: 768px) {
-            nav a:not(.github-link) {
-                display: none;
-            }
-        }
-
-        @media (max-width: 600px) {
             .hero h1 {
-                font-size: 2rem;
+                font-size: 2.4rem;
             }
 
             .hero .tagline {
                 font-size: 1rem;
             }
 
-            .two-col {
+            nav a:not(.github-link):not(.star-btn) {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 32px;
+            }
+
+            .story-grid {
                 grid-template-columns: 1fr;
-                gap: 24px;
+                gap: 48px;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .use-cases-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .arch-diagram {
+                padding: 24px;
+                overflow-x: auto;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
             }
 
             .use-cases-grid {
                 grid-template-columns: 1fr;
             }
 
-            table {
-                font-size: 0.85rem;
+            .comparison-table {
+                overflow-x: auto;
             }
 
-            th, td {
-                padding: 12px 8px;
+            table {
+                min-width: 500px;
+            }
+
+            .star-btn {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
+
+    <!-- Header -->
     <header>
         <div class="container">
-            <a href="/" class="logo">Tunnelr<span>.</span></a>
+            <a href="/" class="logo">tunnelr<span>.</span></a>
             <nav>
                 <a href="#why">Why</a>
-                <a href="#features">Features</a>
+                <a href="#how">How it works</a>
                 <a href="#compare">Compare</a>
+                <a href="https://github.com/Aakeeo/tunnelr" class="star-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.771l-7.416 3.642 1.48-8.279L0 9.306l8.332-1.151z"/></svg>
+                    Star
+                </a>
                 <a href="https://github.com/Aakeeo/tunnelr" class="github-link">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                    </svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
                     GitHub
                 </a>
             </nav>
@@ -456,176 +1028,471 @@
     </header>
 
     <main>
+
+        <!-- Hero -->
         <section class="hero">
             <div class="container">
-                <h1>Localhost to the world. <span>Privately.</span></h1>
-                <p class="tagline">A self-hosted localhost tunneling tool built by a CRM company that got tired of duct-taping dev workflows.</p>
-                <div class="cta-buttons">
-                    <a href="https://github.com/Aakeeo/tunnelr#quick-start" class="btn btn-primary">Get Started</a>
-                    <a href="https://github.com/Aakeeo/tunnelr" class="btn btn-secondary">View on GitHub</a>
+                <div class="hero-badge">
+                    <div class="dot"></div>
+                    Open Source &middot; MIT Licensed
                 </div>
-                <div style="margin-top: 32px;">
-                    <a href="https://www.producthunt.com/products/tunnelr?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-tunnelr" target="_blank" rel="noopener noreferrer"><img alt="Tunnelr - Localhost to the world. Privately. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1071106&theme=dark&t=1769942424426"></a>
+                <h1>Localhost to the world.<br><span class="gradient-text">On your terms.</span></h1>
+                <p class="tagline">Self-hosted tunnel that keeps your data on your infrastructure. No third-party services. No limits. No signup.</p>
+                <div class="cta-row">
+                    <a href="https://github.com/Aakeeo/tunnelr#quick-start" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                        Get Started
+                    </a>
+                    <a href="https://github.com/Aakeeo/tunnelr" class="btn btn-ghost">View Source</a>
+                </div>
+                <div class="hero-ph">
+                    <a href="https://www.producthunt.com/products/tunnelr?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-tunnelr" target="_blank" rel="noopener noreferrer"><img alt="Tunnelr on Product Hunt" loading="lazy" width="220" height="48" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1071106&theme=dark&t=1769942424426"></a>
                 </div>
             </div>
         </section>
 
-        <section class="code-section">
+        <!-- Animated Terminal -->
+        <section class="terminal-section">
             <div class="container">
-                <div class="code-block">
-                    <div class="code-header">
-                        <div class="code-dot"></div>
-                        <div class="code-dot"></div>
-                        <div class="code-dot"></div>
+                <div class="terminal reveal">
+                    <div class="terminal-bar">
+                        <div class="terminal-dot red"></div>
+                        <div class="terminal-dot yellow"></div>
+                        <div class="terminal-dot green"></div>
+                        <div class="terminal-title">tunnelr &mdash; bash</div>
                     </div>
-                    <div class="code-content">
-<pre><span class="comment"># On your VPS - deploy the server</span>
-<span class="command">git clone</span> https://github.com/Aakeeo/tunnelr.git && <span class="command">cd</span> tunnelr
-<span class="command">cp</span> .env.example .env && <span class="command">nano</span> .env
-<span class="command">docker compose up -d</span>
-
-<span class="comment"># On your laptop - connect</span>
-<span class="command">TUNNELR_SERVER</span>=wss://yourdomain.com/ws tunnelr connect 3000
-
-<span class="comment"># That's it!</span>
-Tunnel established!
-  Public URL: https://yourdomain.com/t/a1b2c3
-  Forwarding: https://yourdomain.com/t/a1b2c3 -> http://localhost:3000</pre>
+                    <div class="terminal-body" id="terminal">
+                        <div class="term-line" data-delay="300">
+                            <span class="comment"># Deploy on your VPS (one time)</span>
+                        </div>
+                        <div class="term-line" data-delay="800">
+                            <span class="prompt">$ </span><span class="cmd">docker compose up -d</span>
+                        </div>
+                        <div class="term-line" data-delay="1600">
+                            <span class="output">✓ Container tunnelr-caddy   Started</span>
+                        </div>
+                        <div class="term-line" data-delay="2000">
+                            <span class="output">✓ Container tunnelr-server  Started</span>
+                        </div>
+                        <div class="term-line" data-delay="2800">
+                            <span class="comment">&nbsp;</span>
+                        </div>
+                        <div class="term-line" data-delay="3200">
+                            <span class="comment"># Connect from your laptop</span>
+                        </div>
+                        <div class="term-line" data-delay="3800">
+                            <span class="prompt">$ </span><span class="cmd">tunnelr connect 3000</span>
+                        </div>
+                        <div class="term-line" data-delay="4600">
+                            <span class="success">Tunnel established!</span>
+                        </div>
+                        <div class="term-line" data-delay="5200">
+                            <span class="output">  Public URL:  </span><span class="url">https://yourdomain.com/t/a1b2c3</span>
+                        </div>
+                        <div class="term-line" data-delay="5600">
+                            <span class="output">  Forwarding:  </span><span class="url">https://yourdomain.com/t/a1b2c3</span><span class="output"> → localhost:3000</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Stats -->
+        <section class="stats-bar reveal">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat">
+                        <h3>~500</h3>
+                        <p>Lines of Go</p>
+                    </div>
+                    <div class="stat">
+                        <h3>4</h3>
+                        <p>Files to deploy</p>
+                    </div>
+                    <div class="stat">
+                        <h3>0</h3>
+                        <p>Dependencies on SaaS</p>
+                    </div>
+                    <div class="stat">
+                        <h3>&infin;</h3>
+                        <p>Tunnels allowed</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why / Story -->
         <section class="story" id="why">
             <div class="container">
-                <h2>Why this exists</h2>
-                <p>We build CRMs, automation systems, and AI agents. That means a lot of webhooks, callbacks, and local services that need to be temporarily public.</p>
-                <p>Tunnelr started as an internal tool. We open-sourced it because it solved a real problem for us.</p>
-
-                <div class="privacy-callout">
-                    <p><strong>For teams handling sensitive data:</strong> Every webhook, every API callback, every piece of customer data stays on your infrastructure. No third-party services seeing your traffic. No logs you don't control. Your tunnels, your servers, your rules.</p>
+                <div class="story-grid reveal">
+                    <div class="story-text">
+                        <h2>Built for teams who care about where their data goes</h2>
+                        <p>We build CRMs, automation systems, and AI agents. That means a lot of webhooks, callbacks, and local services that need to be temporarily public.</p>
+                        <p>Every tunneling service we tried routed our customer data through someone else's servers. So we built our own.</p>
+                        <p style="color: var(--text);">Tunnelr started as an internal tool. We open-sourced it because it solved a real problem.</p>
+                    </div>
+                    <div class="privacy-box">
+                        <div class="privacy-item">
+                            <div class="privacy-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                            <div>
+                                <h4>Your infrastructure</h4>
+                                <p>Runs on any $5/mo VPS you control</p>
+                            </div>
+                        </div>
+                        <div class="privacy-item">
+                            <div class="privacy-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <div>
+                                <h4>No third-party eyes</h4>
+                                <p>Zero traffic leaves your server to a middleman</p>
+                            </div>
+                        </div>
+                        <div class="privacy-item">
+                            <div class="privacy-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            </div>
+                            <div>
+                                <h4>Your logs, your rules</h4>
+                                <p>Full control over what gets logged and stored</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="what-it-is" id="features">
+        <!-- How it works -->
+        <section class="how-it-works" id="how">
             <div class="container">
-                <h2>What Tunnelr is (and isn't)</h2>
-                <div class="two-col">
-                    <div class="col is">
-                        <h3>Tunnelr is:</h3>
-                        <ul>
-                            <li>Self-hosted</li>
-                            <li>Domain-first</li>
-                            <li>Simple and predictable</li>
-                        </ul>
+                <div class="section-header reveal">
+                    <h2>Three steps. That's it.</h2>
+                    <p>From zero to tunneling in under 5 minutes.</p>
+                </div>
+                <div class="steps reveal">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Deploy the server</h3>
+                        <p>Clone the repo on any VPS, set your domain in <code style="all:unset;font-family:monospace;color:var(--accent);font-size:inherit">.env</code>, and run Docker Compose.</p>
+                        <code>docker compose up -d</code>
                     </div>
-                    <div class="col isnt">
-                        <h3>Tunnelr is not:</h3>
-                        <ul>
-                            <li>A hosted SaaS</li>
-                            <li>A replacement for every tunneling service</li>
-                            <li>A "sign up and forget" tool</li>
-                        </ul>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Build the CLI</h3>
+                        <p>One Go build command gives you the tunnelr binary. Move it to your PATH.</p>
+                        <code>go build -o tunnelr ./cmd/cli</code>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Connect</h3>
+                        <p>Point the CLI at your server and expose any local port to the internet.</p>
+                        <code>tunnelr connect 3000</code>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Architecture -->
+        <section class="architecture">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2>Simple architecture</h2>
+                    <p>No magic. WebSockets + reverse proxy + a registry.</p>
+                </div>
+                <div class="arch-diagram reveal">
+                    <div class="arch-label">Your VPS</div>
+                    <div class="arch-row">
+                        <div class="arch-node highlight">
+                            <h4>Caddy</h4>
+                            <p>HTTPS termination</p>
+                        </div>
+                        <div class="arch-node highlight">
+                            <h4>Tunnel Server</h4>
+                            <p>Go binary</p>
+                        </div>
+                        <div class="arch-node highlight">
+                            <h4>Registry</h4>
+                            <p>In-memory mapping</p>
+                        </div>
+                    </div>
+                    <div class="arch-connector">
+                        <div class="arch-arrow">
+                            <span>HTTPS &uarr;&darr; WebSocket</span>
+                        </div>
+                    </div>
+                    <div class="arch-label" style="border-bottom:none; margin-bottom: 16px;">Your Machine</div>
+                    <div class="arch-row">
+                        <div class="arch-node">
+                            <h4>Webhook Provider</h4>
+                            <p>Stripe, GitHub, etc.</p>
+                        </div>
+                        <div class="arch-node">
+                            <h4>Tunnelr CLI</h4>
+                            <p>WebSocket client</p>
+                        </div>
+                        <div class="arch-node">
+                            <h4>localhost:3000</h4>
+                            <p>Your app</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features" id="features">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2>What you get</h2>
+                    <p>Everything you need, nothing you don't.</p>
+                </div>
+                <div class="features-grid reveal">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h3>Self-hosted</h3>
+                        <p>Deploy on any VPS you control. Your infrastructure, your rules, your data.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </div>
+                        <h3>Custom domain</h3>
+                        <p>Use your own domain with automatic SSL via Caddy. Path or subdomain routing.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </div>
+                        <h3>No limits</h3>
+                        <p>Unlimited tunnels, unlimited time. No 2-hour expiry, no random URL changes.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </div>
+                        <h3>Dead simple</h3>
+                        <p>~500 lines of Go. No database, no config server, no account system. Just works.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases -->
         <section class="use-cases">
             <div class="container">
-                <h2>Where it fits best</h2>
-                <div class="use-cases-grid">
+                <div class="section-header reveal">
+                    <h2>Built for these workflows</h2>
+                </div>
+                <div class="use-cases-grid reveal">
                     <div class="use-case">
-                        <h3>CRM Webhooks</h3>
-                        <p>Test payment callbacks, form submissions, and integrations locally</p>
+                        <span class="use-case-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </span>
+                        <h3>Webhook Testing</h3>
+                        <p>Stripe, GitHub, Slack callbacks hitting your local dev server</p>
                     </div>
                     <div class="use-case">
+                        <span class="use-case-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </span>
                         <h3>AI Agent Callbacks</h3>
-                        <p>Receive async responses from LLM APIs and agent workflows</p>
+                        <p>Async LLM responses and agent workflow callbacks to localhost</p>
                     </div>
                     <div class="use-case">
-                        <h3>Internal Tools</h3>
-                        <p>Share dev builds with your team without deploying</p>
+                        <span class="use-case-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </span>
+                        <h3>Team Demos</h3>
+                        <p>Share dev builds with teammates without deploying to staging</p>
                     </div>
                     <div class="use-case">
-                        <h3>Long-running Tunnels</h3>
-                        <p>No 2-hour limits, no random URL changes</p>
+                        <span class="use-case-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </span>
+                        <h3>Client Previews</h3>
+                        <p>Show work-in-progress to clients from your local machine</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Comparison -->
         <section class="comparison" id="compare">
             <div class="container">
-                <h2>Comparison</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Tunnelr</th>
-                            <th>ngrok (free)</th>
-                            <th>Cloudflare Tunnel</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Self-hosted</td>
-                            <td class="check">Yes</td>
-                            <td class="cross">No</td>
-                            <td class="cross">No</td>
-                        </tr>
-                        <tr>
-                            <td>Unlimited tunnels</td>
-                            <td class="check">Yes</td>
-                            <td class="cross">1 only</td>
-                            <td class="check">Yes</td>
-                        </tr>
-                        <tr>
-                            <td>Persistent URLs</td>
-                            <td class="check">Yes</td>
-                            <td class="cross">2hr expiry</td>
-                            <td class="check">Yes</td>
-                        </tr>
-                        <tr>
-                            <td>Custom domain</td>
-                            <td class="check">Yes</td>
-                            <td class="cross">No</td>
-                            <td class="check">Yes</td>
-                        </tr>
-                        <tr>
-                            <td>No account required</td>
-                            <td class="check">Yes</td>
-                            <td class="cross">No</td>
-                            <td class="cross">No</td>
-                        </tr>
-                        <tr>
-                            <td>Full data privacy</td>
-                            <td class="check">Yes</td>
-                            <td class="cross">No</td>
-                            <td class="cross">No</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="cta-section">
-            <div class="container">
-                <h2>See it in action</h2>
-                <div class="cta-links">
-                    <a href="https://github.com/Aakeeo/tunnelr">GitHub repo</a>
-                    <span class="coming-soon">Demo videos (coming soon)</span>
-                    <span class="coming-soon">Newsletter deep dive (coming soon)</span>
+                <div class="section-header reveal">
+                    <h2>How it compares</h2>
+                    <p>Tunnelr trades convenience for ownership.</p>
+                </div>
+                <div class="comparison-table reveal">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th class="tunnelr-col">Tunnelr</th>
+                                <th>ngrok (free)</th>
+                                <th>Cloudflare Tunnel</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Self-hosted</td>
+                                <td class="check">Yes</td>
+                                <td class="cross">No</td>
+                                <td class="cross">No</td>
+                            </tr>
+                            <tr>
+                                <td>Unlimited tunnels</td>
+                                <td class="check">Yes</td>
+                                <td class="cross">1 only</td>
+                                <td class="check">Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Persistent URLs</td>
+                                <td class="check">Yes</td>
+                                <td class="cross">2hr expiry</td>
+                                <td class="check">Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Custom domain</td>
+                                <td class="check">Yes</td>
+                                <td class="cross">Paid only</td>
+                                <td class="check">Yes</td>
+                            </tr>
+                            <tr>
+                                <td>No account needed</td>
+                                <td class="check">Yes</td>
+                                <td class="cross">No</td>
+                                <td class="cross">No</td>
+                            </tr>
+                            <tr>
+                                <td>Full data privacy</td>
+                                <td class="check">Yes</td>
+                                <td class="cross">No</td>
+                                <td class="cross">No</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
+
+        <!-- CTA -->
+        <section class="cta-section">
+            <div class="container reveal">
+                <h2>Ready to own your tunnels?</h2>
+                <p class="sub">Deploy in under 5 minutes. No signup, no credit card.</p>
+                <div class="cta-code">
+                    <span class="cmd">git clone</span> https://github.com/Aakeeo/tunnelr.git
+                </div>
+                <div class="cta-buttons">
+                    <a href="https://github.com/Aakeeo/tunnelr#quick-start" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                        Quick Start Guide
+                    </a>
+                    <a href="https://github.com/Aakeeo/tunnelr" class="btn btn-ghost">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                        Star on GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+
     </main>
 
+    <!-- Footer -->
     <footer>
         <div class="container">
-            <p>Built quietly. Shared openly.</p>
+            <div class="footer-content">
+                <div class="footer-left">Built quietly. Shared openly.</div>
+                <div class="footer-links">
+                    <a href="https://github.com/Aakeeo/tunnelr">GitHub</a>
+                    <a href="https://github.com/Aakeeo/tunnelr/blob/main/LICENSE">MIT License</a>
+                    <a href="https://github.com/Aakeeo/tunnelr/issues">Report Issue</a>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Terminal animation
+        const terminalObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateTerminal();
+                    terminalObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        const terminal = document.getElementById('terminal');
+        if (terminal) terminalObserver.observe(terminal);
+
+        function animateTerminal() {
+            const lines = document.querySelectorAll('#terminal .term-line');
+            lines.forEach(line => {
+                const delay = parseInt(line.dataset.delay) || 0;
+                setTimeout(() => {
+                    line.classList.add('visible');
+                }, delay);
+            });
+
+            // Add blinking cursor to last line
+            const lastLine = lines[lines.length - 1];
+            const totalDelay = parseInt(lastLine.dataset.delay) || 0;
+            setTimeout(() => {
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                lastLine.appendChild(cursor);
+            }, totalDelay + 200);
+        }
+
+        // Smooth anchor scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Tunnelr",
+        "description": "Self-hosted localhost tunnel. Expose local dev servers to the internet with your own domain.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS, Windows",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "license": "https://opensource.org/licenses/MIT",
+        "url": "https://aakeeo.github.io/tunnelr/",
+        "codeRepository": "https://github.com/Aakeeo/tunnelr"
+    }
+    </script>
 </body>
 </html>

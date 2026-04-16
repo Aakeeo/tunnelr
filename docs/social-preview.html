@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Screenshot this at 1280x640 for GitHub social preview */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            width: 1280px;
+            height: 640px;
+            background: #050505;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Subtle gradient glow */
+        .glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+            top: 50%;
+            left: 35%;
+            transform: translate(-50%, -50%);
+        }
+
+        .glow-2 {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.05) 0%, transparent 70%);
+            top: 30%;
+            right: 10%;
+        }
+
+        .content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: #f5f5f5;
+            letter-spacing: -0.04em;
+            margin-bottom: 20px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #22c55e 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: 1.6rem;
+            color: #888;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .badges {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .badge {
+            background: #0f0f0f;
+            border: 1px solid #1f1f1f;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #888;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .badge .highlight {
+            color: #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <div class="glow"></div>
+    <div class="glow-2"></div>
+    <div class="content">
+        <div class="logo">tunnelr<span>.</span></div>
+        <div class="tagline">Self-hosted localhost tunnel. Your data, your servers.</div>
+        <div class="badges">
+            <div class="badge"><span class="highlight">Self-hosted</span></div>
+            <div class="badge"><span class="highlight">No limits</span></div>
+            <div class="badge"><span class="highlight">Full privacy</span></div>
+            <div class="badge"><span class="highlight">MIT Licensed</span></div>
+        </div>
+    </div>
+</body>
+</html>
